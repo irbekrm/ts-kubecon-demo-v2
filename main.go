@@ -1,10 +1,8 @@
 package main
 
 import (
-    "crpyto/tls"
-    "io"
+    "crypto/tls"
     "fmt"
-    "log"
     "net/http"
 
     "tailscale.com/tsnet"
@@ -18,7 +16,8 @@ func main() {
            },
           http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
              fmt.Fprintf(w, "<html><body><h1>Hello from Tailscale!</h1>\n")    
-    }))
+           }),
+    }
 }
 
 
