@@ -60,8 +60,6 @@ func main() {
 		}
 	}()
 
-	http.Serve(ln, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "<html><body><h1>Hello from Tailscale!</h1>\n")
-	}))
-
+	http.Serve(ln, http.HandlerFunc(render))
+	log.Printf("Starting hello server.")
 }

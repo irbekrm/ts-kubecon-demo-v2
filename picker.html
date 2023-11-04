@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+body {
+  font-family: Inter, Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  text-align: center;
+}
+
+.flex {
+  display: flex;
+  gap: 4rem;
+  justify-content: center;
+}
+
+.type > div {
+  width: 350px;
+  height: 350px;
+  background-size: cover;
+  border-radius: 15%;
+  text-align: center;
+}
+
+.type .tail {
+  background-image: url("{{ .Tail.Src }}");
+}
+
+.type .scale {
+  background-image: url("{{ .Scale.Src }}");
+}
+
+.type button {
+  --tail: rgb(90, 130, 222);
+  --scale: rgb(9, 130, 93);
+  background: white;
+  font-size: 1.6rem;
+  display: block;
+  margin: 2rem auto 0;
+  padding: 0.7rem 1.2rem;
+  transition: 0.5s all;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 2px solid black;
+  border-radius: 1rem;
+}
+
+.type .tail + button {
+  border-color: var(--tail);
+  color: var(--tail);
+}
+
+.type .tail + button:hover {
+  background-color: var(--tail);
+  color: white;
+}
+
+.type .scale + button {
+  border-color: var(--scale);
+  color: var(--scale)
+}
+.type .scale + button:hover {
+  background-color: var(--scale);
+  color: white;
+}
+
+
+
+
+</style>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<head>
+<body>
+    <h1>Tails or scales?</h1>
+    <div class="flex">
+      <div class="type">
+        <div class="tail"></div>
+        <button>Tails: {{ .Tail.Name }}</button>
+      </div>
+      <div class="type">
+        <div class="scale"></div>
+        <button>Scales: {{ .Scale.Name }} </button>
+      </div>
+    </div>
+  </body>
+</html>
