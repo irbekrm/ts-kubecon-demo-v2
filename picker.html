@@ -66,9 +66,6 @@ h1 {
   color: white;
 }
 
-
-
-
 </style>
 <head>
   <meta charset="utf-8">
@@ -77,14 +74,18 @@ h1 {
 <body>
     <h1>Tails or scales?</h1>
     <div class="flex">
-      <div class="type">
+      <form class="type" method="POST">
+        {{.CSRF}}
         <div class="tail"></div>
-        <button>Tails: {{ .Tail.Name }}</button>
-      </div>
-      <div class="type">
+        <button type="submit" name="vote" value="tails">Tails: {{ .Tail.Name }}</button>
+      </form>
+
+      <form class="type" method="POST">
+        {{.CSRF}}
         <div class="scale"></div>
-        <button>Scales: {{ .Scale.Name }} </button>
-      </div>
+        <button type="submit" name="vote" value="scales">Scales: {{ .Scale.Name }} </button>
+      </form>
+
     </div>
   </body>
 </html>

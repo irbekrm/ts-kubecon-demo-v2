@@ -30,6 +30,8 @@ require (
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/nftables v0.1.1-0.20230115205135-9aa6fdf5a28c // indirect
+	github.com/gorilla/csrf v1.7.1 // indirect
+	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
 	github.com/illarion/gonotify v1.0.1 // indirect
 	github.com/insomniacslk/dhcp v0.0.0-20230407062729-974c6f05fe16 // indirect

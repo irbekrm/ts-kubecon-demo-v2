@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/csrf"
 	"tailscale.com/util/must"
 	"tailscale.com/words"
 )
@@ -81,7 +82,7 @@ func getImg(ctx context.Context, words []string) Img {
 			imgSrc = v.Original.Source
 			title = v.Title
 
-			if v.Original.Width < 1000 {
+			if v.Original.Width < 1000 || v.Original.Height < 1000 {
 				found = true // if the image is too large, try to find a smaller one
 			}
 		}
@@ -100,15 +101,34 @@ type Img struct {
 }
 
 func render(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		processData(r)
+	} else if r.Method != "GET" {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	tmpl := template.Must(template.New("ts").Parse(embeddedTemplate))
 
 	data := struct {
+		CSRF  template.HTML
 		Tail  Img
 		Scale Img
 	}{
+		CSRF:  csrf.TemplateField(r),
 		Tail:  getImg(r.Context(), words.Tails()),
 		Scale: getImg(r.Context(), words.Scales()),
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl.Execute(w, data)
+}
+
+func processData(r *http.Request) {
+	if r.PostForm.Get("vote") != "tails" && r.PostForm.Get("vote") != "scales" {
+		// don't process bogus values
+		return
+	}
+	vote := r.PostForm.Get("vote")
+
+	log.Printf("do something with this vote: %s", vote)
 }

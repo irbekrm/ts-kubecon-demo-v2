@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/gorilla/csrf"
 	"tailscale.com/tsnet"
 )
 
@@ -60,6 +63,14 @@ func main() {
 		}
 	}()
 
-	http.Serve(ln, http.HandlerFunc(render))
+	http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(render)))
 	log.Printf("Starting hello server.")
+}
+
+func csrfKey() []byte {
+	var ret [32]byte
+	if _, err := io.ReadFull(rand.Reader, ret[:]); err != nil {
+		log.Fatal("not enough randomness to make a CSRF key")
+	}
+	return ret[:]
 }
