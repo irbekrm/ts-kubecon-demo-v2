@@ -128,7 +128,15 @@ func processData(r *http.Request) {
 		// don't process bogus values
 		return
 	}
+
 	vote := r.PostForm.Get("vote")
+	if vote == "tails" {
+		tailsVotes.Inc()
+		log.Printf("tails up")
+	} else if vote == "scales" {
+		scalesVotes.Inc()
+		log.Printf("scales up")
+	}
 
 	log.Printf("do something with this vote: %s", vote)
 }

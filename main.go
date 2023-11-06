@@ -11,7 +11,24 @@ import (
 	"time"
 
 	"github.com/gorilla/csrf"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"tailscale.com/tsnet"
+)
+
+var (
+	tailsVotes = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "votes",
+			Name:      "tails",
+			Help:      "This is my counter for tails votes",
+		})
+	scalesVotes = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "votes",
+			Name:      "scales",
+			Help:      "This is my counter for scales votes",
+		})
 )
 
 func main() {
@@ -65,6 +82,13 @@ func main() {
 
 	http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(render)))
 	log.Printf("Starting hello server.")
+
+	http.Handle("/metrics", promhttp.Handler())
+	prometheus.MustRegister(tailsVotes)
+	prometheus.MustRegister(scalesVotes)
+
+	log.Fatal(http.ListenAndServe(":2112", nil))
+
 }
 
 func csrfKey() []byte {
