@@ -9,10 +9,13 @@ import (
 	"net/http"
 	"time"
 
+	"html/template"
+
 	"github.com/gorilla/csrf"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"tailscale.com/tsnet"
+	"tailscale.com/words"
 )
 
 var (
@@ -75,7 +78,36 @@ func main() {
 		}
 	}()
 
-	http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(render)))
+	http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			processData(r)
+		} else if r.Method != "GET" {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		whois, err := localClient.WhoIs(context.Background(), r.RemoteAddr)
+		if err != nil {
+			http.Error(w, "unable to read user", http.StatusForbidden)
+			return
+		}
+		var isPublic bool = whois.UserProfile.LoginName == "tagged-devices"
+		tmpl := template.Must(template.New("ts").Parse(embeddedTemplate))
+
+		data := struct {
+			CSRF     template.HTML
+			Tail     Img
+			Scale    Img
+			IsPublic bool
+		}{
+			CSRF:     csrf.TemplateField(r),
+			Tail:     getImg(r.Context(), words.Tails()),
+			Scale:    getImg(r.Context(), words.Scales()),
+			IsPublic: isPublic,
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		tmpl.Execute(w, data)
+	})))
 	log.Printf("Starting hello server.")
 
 	http.Handle("/metrics", promhttp.Handler())

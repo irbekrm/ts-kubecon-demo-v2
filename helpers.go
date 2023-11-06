@@ -5,16 +5,13 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"log"
 	"math/rand"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/csrf"
 	"tailscale.com/util/must"
-	"tailscale.com/words"
 )
 
 //go:embed picker.html
@@ -98,29 +95,6 @@ func getImg(ctx context.Context, words []string) Img {
 type Img struct {
 	Src  string
 	Name string
-}
-
-func render(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		processData(r)
-	} else if r.Method != "GET" {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	tmpl := template.Must(template.New("ts").Parse(embeddedTemplate))
-
-	data := struct {
-		CSRF  template.HTML
-		Tail  Img
-		Scale Img
-	}{
-		CSRF:  csrf.TemplateField(r),
-		Tail:  getImg(r.Context(), words.Tails()),
-		Scale: getImg(r.Context(), words.Scales()),
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	tmpl.Execute(w, data)
 }
 
 func processData(r *http.Request) {
