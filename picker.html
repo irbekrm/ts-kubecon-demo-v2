@@ -66,13 +66,22 @@ h1 {
   color: white;
 }
 
+@media (max-width: 700px) {
+      .flex {
+        flex-direction: column;
+        gap: 2rem;
+      }
+    }
+
 </style>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 <head>
 <body>
-    <h1>Tails or scales?</h1>
+    <h1>  {{if not .IsPublic}}✨{{end}}
+      Tails or Scales
+      {{if not .IsPublic}}✨{{end}}</h1>
     <div class="flex">
       <form class="type" method="POST">
         {{.CSRF}}
