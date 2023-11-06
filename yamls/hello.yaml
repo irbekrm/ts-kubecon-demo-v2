@@ -10,7 +10,7 @@ metadata:
   namespace: hello
   annotations:
     tailscale.com/expose: "true"
-    tailscale.com/hostname: "hello"
+    tailscale.com/hostname: "hello-in-k8s"
   labels:
     app: hello
 spec:
@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
       - name: hello
-        image: docker-registry-registry-service:5000/hello:latest
+        image: ghcr.io/rhealitycheck/hello:latest
         ports:
           - containerPort: 443
           - name: metrics
