@@ -2,8 +2,6 @@ module hello
 
 go 1.21
 
-toolchain go1.21.1
-
 require tailscale.com v1.52.1
 
 require (
