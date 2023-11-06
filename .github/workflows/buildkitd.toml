@@ -1,0 +1,3 @@
+[registry."143.198.245.58:5000"]
+  http = true
+  insecure = true

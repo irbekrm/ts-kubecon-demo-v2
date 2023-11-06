@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: 143.198.245.58:5000/hello
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with: 
+          platforms: linux/amd64, linux/arm64/v8
+          config: .github/workflows/buildkitd.toml
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: 143.198.245.58:5000/hello:latest 
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
