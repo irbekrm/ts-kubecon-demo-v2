@@ -42,3 +42,11 @@ spec:
         image: docker-registry-registry-service:5000/hello:latest
         ports:
           - containerPort: 443
+          - name: metrics
+            containerPort: 2112
+        env:
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: ts-auth
+              key: TS_AUTHKEY
