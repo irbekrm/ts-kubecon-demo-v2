@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/rand"
-	"crypto/tls"
 	"fmt"
 	"io"
 	"log"
@@ -34,7 +33,9 @@ var (
 func main() {
 	var hostname = "hello"
 	ts := &tsnet.Server{Hostname: hostname}
-	if err := ts.Start(); err != nil {
+
+	ln, err := ts.ListenFunnel("tcp", ":443")
+	if err != nil {
 		log.Fatalf("Error starting tsnet.Server: %v", err)
 	}
 	localClient, err := ts.LocalClient()
@@ -42,13 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ln, err := ts.Listen("tcp", ":443")
-	ln = tls.NewListener(ln, &tls.Config{
-		GetCertificate: localClient.GetCertificate,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Printf("Listening on https://%v\n", ts.CertDomains()[0])
 
 	go func() {
 		// wait for tailscale to start before trying to fetch cert names
