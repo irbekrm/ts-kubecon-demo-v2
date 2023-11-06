@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    tailscale.com/tailnet-ip: 100.110.184.139
+  name: hello  
+spec:
+  ports:
+    - port: 2112
+      protocol: TCP
+      targetPort: 9402
+  externalName: unused 
+  type: ExternalName
