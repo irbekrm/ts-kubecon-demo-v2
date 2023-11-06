@@ -92,6 +92,7 @@ func main() {
 			return
 		}
 		var isPublic bool = whois.UserProfile.LoginName == "tagged-devices"
+		fmt.Println("DEBUG111", whois.UserProfile.LoginName)
 		tmpl := template.Must(template.New("ts").Parse(embeddedTemplate))
 
 		data := struct {
