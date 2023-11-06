@@ -10,6 +10,22 @@ h1 {
   text-align: center;
 }
 
+.welcome {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sparkle {
+  flex: 0 0 auto;
+}
+
+.welcome-text {
+  margin: 0 10px;
+  flex: 0 1 auto;
+  text-align: center;
+}
+
 .flex {
   display: flex;
   gap: 4rem;
@@ -67,10 +83,17 @@ h1 {
 }
 
 @media (max-width: 700px) {
-      .flex {
-        flex-direction: column;
-        gap: 2rem;
-      }
+  .flex {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .welcome {
+    justify-content: space-between;
+  }
+
+  .welcome-text {
+    margin: 0 5px;
+  }
     }
 
 </style>
@@ -79,9 +102,14 @@ h1 {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 <head>
 <body>
-    <h1>  {{if not .IsPublic}}✨{{end}}
-      Tails or Scales
-      {{if not .IsPublic}}✨{{end}}</h1>
+  <h1>Tails or Scales</h1>
+  {{if ne .LoginName "tagged-devices"}}
+  <h2 class="welcome">
+    <span class="sparkle">✨</span>
+    <span class="welcome-text">Welcome, {{.LoginName}}!</span>
+    <span class="sparkle">✨</span>
+  </h2>
+  {{end}}
     <div class="flex">
       <form class="type" method="POST">
         {{.CSRF}}

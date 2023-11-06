@@ -91,19 +91,18 @@ func main() {
 			http.Error(w, "unable to read user", http.StatusForbidden)
 			return
 		}
-		var isPublic bool = whois.UserProfile.LoginName == "tagged-devices"
 		tmpl := template.Must(template.New("ts").Parse(embeddedTemplate))
 
 		data := struct {
-			CSRF     template.HTML
-			Tail     Img
-			Scale    Img
-			IsPublic bool
+			CSRF      template.HTML
+			Tail      Img
+			Scale     Img
+			LoginName string
 		}{
-			CSRF:     csrf.TemplateField(r),
-			Tail:     getImg(r.Context(), words.Tails()),
-			Scale:    getImg(r.Context(), words.Scales()),
-			IsPublic: isPublic,
+			CSRF:      csrf.TemplateField(r),
+			Tail:      getImg(r.Context(), words.Tails()),
+			Scale:     getImg(r.Context(), words.Scales()),
+			LoginName: whois.UserProfile.LoginName,
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		tmpl.Execute(w, data)
