@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"html/template"
@@ -46,9 +47,31 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(2)
+
 	fmt.Printf("Listening on https://%v\n", ts.CertDomains()[0])
 
+	if lm, err := ts.Listen("tcp", ":2112"); err != nil {
+		log.Fatal("Error starting prometheus listener: %v", err)
+	} else {
+		go func() {
+			defer wg.Done()
+			http.Handle("/metrics", promhttp.Handler())
+			prometheus.MustRegister(tailsVotes)
+			prometheus.MustRegister(scalesVotes)
+			log.Print("Starting prometheus listener on :2112")
+
+			if err := http.Serve(lm, nil); err != nil {
+				log.Fatal("Error serving metrics: %v", err)
+			}
+
+			log.Print("Stopping prometheus listener")
+		}()
+	}
+
 	go func() {
+		defer wg.Done()
 		// wait for tailscale to start before trying to fetch cert names
 		for i := 0; i < 60; i++ {
 			st, err := localClient.Status(context.Background())
@@ -78,7 +101,7 @@ func main() {
 		}
 	}()
 
-	http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	if err := http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			processData(r)
 		} else if r.Method != "GET" {
@@ -106,14 +129,10 @@ func main() {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		tmpl.Execute(w, data)
-	})))
+	}))); err != nil {
+		log.Fatal(err)
+	}
 	log.Printf("Starting hello server.")
-
-	http.Handle("/metrics", promhttp.Handler())
-	prometheus.MustRegister(tailsVotes)
-	prometheus.MustRegister(scalesVotes)
-
-	log.Fatal(http.ListenAndServe(":2112", nil))
 
 }
 
