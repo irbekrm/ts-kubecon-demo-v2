@@ -2,8 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    tailscale.com/tailnet-ip: 100.110.184.139
+    tailscale.com/hostname: monitoring-hello-metrics-egress
+    tailscale.com/tailnet-ip: 100.118.163.137 
   name: hello  
+  namespace: monitoring
 spec:
   ports:
     - port: 2112
