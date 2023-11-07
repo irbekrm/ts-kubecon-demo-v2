@@ -20,6 +20,8 @@ metadata:
   name: hello
   namespace: hello
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:
