@@ -4,17 +4,18 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
+	"net"
 	"net/http"
-	"sync"
+	"strings"
 	"time"
-
-	"html/template"
 
 	"github.com/gorilla/csrf"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"tailscale.com/client/tailscale"
 	"tailscale.com/tsnet"
 	"tailscale.com/words"
 )
@@ -32,9 +33,54 @@ var (
 			Name:      "scales",
 			Help:      "This is my counter for scales votes",
 		})
+	registry = prometheus.NewRegistry()
 )
 
+func init() {
+	registry.MustRegister(tailsVotes)
+	registry.MustRegister(scalesVotes)
+}
+
+type metricsServer struct {
+	addr            string
+	metricsEndpoint string
+}
+
+func (m *metricsServer) Start() error {
+	ln, err := net.Listen("tcp", m.addr)
+	if err != nil {
+		return fmt.Errorf("error listening on: %s: %v", m.addr, err)
+	}
+	mux := http.NewServeMux()
+	handler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{
+		ErrorHandling: promhttp.HTTPErrorOnError,
+	})
+	mux.Handle(m.metricsEndpoint, handler)
+	srv := http.Server{
+		Handler: mux,
+	}
+	log.Printf("metrics server listening on %s", ln.Addr().String())
+
+	if err := srv.Serve(ln); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("error serving metrics: %v", err)
+	}
+	return nil
+}
+
 func main() {
+	// metrics
+	s := metricsServer{
+		addr:            ":9402",
+		metricsEndpoint: "/metrics",
+	}
+	go func() {
+		if err := s.Start(); err != nil {
+			log.Fatal(err)
+		}
+
+	}()
+
+	// tails & scales
 	var hostname = "kubecon-demo"
 	ts := &tsnet.Server{Hostname: hostname}
 
@@ -46,32 +92,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	fmt.Printf("Listening on https://%v\n", ts.CertDomains()[0])
-
-	if lm, err := ts.Listen("tcp", ":9402"); err != nil {
-		log.Fatal("Error starting prometheus listener: %v", err)
-	} else {
-		go func() {
-			defer wg.Done()
-			http.Handle("/metrics", promhttp.Handler())
-			prometheus.MustRegister(tailsVotes)
-			prometheus.MustRegister(scalesVotes)
-			log.Print("Starting prometheus listener on :9402")
-
-			if err := http.Serve(lm, nil); err != nil {
-				log.Fatal("Error serving metrics: %v", err)
-			}
-
-			log.Print("Stopping prometheus listener")
-		}()
-	}
-
 	go func() {
-		defer wg.Done()
 		// wait for tailscale to start before trying to fetch cert names
 		for i := 0; i < 60; i++ {
 			st, err := localClient.Status(context.Background())
@@ -90,12 +111,13 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		name, ok := localClient.ExpandSNIName(context.Background(), hostname)
+		fqdn, ok := certDomainForHostname(context.Background(), localClient, hostname)
 		if !ok {
-			log.Fatalf("can't get hostname for https redirect")
+			log.Fatalf("could not find a cert for fqdn prefix %s", hostname)
 		}
+		log.Printf("hostname is %s", hostname)
 		if err := http.Serve(l80, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, fmt.Sprintf("https://%s", name), http.StatusMovedPermanently)
+			http.Redirect(w, r, fmt.Sprintf("https://%s", fqdn), http.StatusMovedPermanently)
 		})); err != nil {
 			log.Fatal(err)
 		}
@@ -132,8 +154,21 @@ func main() {
 	}))); err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Starting hello server.")
+}
 
+func certDomainForHostname(ctx context.Context, lc *tailscale.LocalClient, hostnamePrefix string) (string, bool) {
+	st, err := lc.StatusWithoutPeers(context.Background())
+	if err != nil {
+		return "", false
+	}
+	for _, d := range st.CertDomains {
+		log.Printf("looking at domain: %s", d)
+		if len(d) > len(hostnamePrefix)+1 && strings.HasPrefix(d, hostnamePrefix) {
+			log.Printf("selecting %s", d)
+			return d, true
+		}
+	}
+	return "", false
 }
 
 func csrfKey() []byte {
