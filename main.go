@@ -101,7 +101,7 @@ func main() {
 		}
 	}()
 
-	http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	if err := http.Serve(ln, csrf.Protect(csrfKey())(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			processData(r)
 		} else if r.Method != "GET" {
@@ -129,7 +129,9 @@ func main() {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		tmpl.Execute(w, data)
-	})))
+	}))); err != nil {
+		log.Fatal(err)
+	}
 	log.Printf("Starting hello server.")
 
 }
