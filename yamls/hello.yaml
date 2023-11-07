@@ -31,6 +31,10 @@ spec:
       app: hello
   template:
     metadata:
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9402"
+        prometheus.io/scrape: "true"
       labels:
         app: hello
     spec:
@@ -41,7 +45,7 @@ spec:
         ports:
           - containerPort: 443
           - name: metrics
-            containerPort: 2112
+            containerPort: 9402
         env:
         - name: TS_AUTHKEY
           valueFrom:

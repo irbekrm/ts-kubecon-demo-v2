@@ -4,12 +4,12 @@ metadata:
   annotations:
     tailscale.com/hostname: monitoring-hello-metrics-egress
     tailscale.com/tailnet-ip: 100.116.26.152 
-  name: hello  
+  name: hello-metrics-egress  
   namespace: monitoring
 spec:
   ports:
     - port: 9402
       protocol: TCP
-      targetPort: 2112
+      targetPort: 9402
   externalName: unused 
   type: ExternalName

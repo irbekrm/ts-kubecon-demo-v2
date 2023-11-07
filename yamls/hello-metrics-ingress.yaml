@@ -7,9 +7,9 @@ metadata:
      tailscale.com/hostname: hello-metrics-ingress
 spec:
   ports:
-  - port: 2112
+  - port: 9402
     protocol: TCP
-    targetPort: 2112
+    targetPort: 9402
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: hello
