@@ -14,7 +14,7 @@ RUN go mod download
 COPY *.go *.html ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /hello
+RUN CGO_ENABLED=0 GOOS=linux go build -o /kubecon-demo
 
 # Optional:
 # To bind to a TCP port, runtime parameters must be supplied to the docker command.
@@ -24,5 +24,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /hello
 EXPOSE 8080
 
 # Run
-CMD ["/hello"]
+CMD ["/kubecon-demo"]
 

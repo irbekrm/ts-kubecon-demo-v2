@@ -3,7 +3,7 @@ kind: Service
 metadata:
   annotations:
     tailscale.com/hostname: monitoring-hello-metrics-egress
-    tailscale.com/tailnet-ip: 100.118.163.137 
+    tailscale.com/tailnet-ip: 100.116.26.152 
   name: hello  
   namespace: monitoring
 spec:
