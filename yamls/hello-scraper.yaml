@@ -10,6 +10,7 @@ metadata:
   name: hello-app
   namespace: monitoring
 spec:
+  scrapeInterval: 5s
   staticConfigs:
   - targets:
     - hello-metrics-egress.monitoring.svc:9402
