@@ -34,7 +34,7 @@ var (
 )
 
 func main() {
-	var hostname = "hello"
+	var hostname = "kubecon-demo"
 	ts := &tsnet.Server{Hostname: hostname}
 
 	ln, err := ts.ListenFunnel("tcp", ":443")
