@@ -52,7 +52,7 @@ func main() {
 
 	fmt.Printf("Listening on https://%v\n", ts.CertDomains()[0])
 
-	if lm, err := ts.Listen("tcp", ":2112"); err != nil {
+	if lm, err := ts.Listen("tcp", ":9402"); err != nil {
 		log.Fatal("Error starting prometheus listener: %v", err)
 	} else {
 		go func() {
@@ -60,7 +60,7 @@ func main() {
 			http.Handle("/metrics", promhttp.Handler())
 			prometheus.MustRegister(tailsVotes)
 			prometheus.MustRegister(scalesVotes)
-			log.Print("Starting prometheus listener on :2112")
+			log.Print("Starting prometheus listener on :9402")
 
 			if err := http.Serve(lm, nil); err != nil {
 				log.Fatal("Error serving metrics: %v", err)
