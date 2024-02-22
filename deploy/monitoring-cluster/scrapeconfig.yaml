@@ -1,0 +1,15 @@
+# ScrapeConfig is how Services of type external name can be scraped
+# https://github.com/prometheus-operator/prometheus-operator/issues/218
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  labels:
+    metricssource: client-app
+    cluster: workloads
+    prometheus: k8s
+  name: client-app
+  namespace: monitoring
+spec:
+  staticConfigs:
+  - targets:
+    - metrics-egress.monitoring.svc:9402

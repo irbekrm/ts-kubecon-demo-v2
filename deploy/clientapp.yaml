@@ -1,47 +1,49 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: hello 
-  namespace: hello
-  labels:
-    app: hello
-spec:
-  selector:
-    app: hello
-  ports:
-  - port: 443
-    protocol: TCP
-    targetPort: 443
-  type: ClusterIP
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello
-  namespace: hello
+  name: app
+  namespace: sandbox 
 spec:
   strategy:
     type: Recreate
   replicas: 1
   selector:
     matchLabels:
-      app: hello
+      app: app
   template:
     metadata:
       labels:
-        app: hello
+        app: app
     spec:
       containers:
-      - name: hello
+      - name: app
         image: ghcr.io/rhealitycheck/hello:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
-          - containerPort: 443
           - name: metrics
             containerPort: 9402
+          - name: app
+            containerPort: 443
         env:
         - name: TS_AUTHKEY
           valueFrom:
             secretKeyRef:
               name: ts-auth
               key: TS_AUTHKEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics
+  namespace: sandbox 
+  annotations:
+     tailscale.com/hostname: app-metrics
+spec:
+  ports:
+  - port: 9402
+    protocol: TCP
+    targetPort: 9402
+  selector:
+    app: app
+  type: LoadBalancer
+  loadBalancerClass: tailscale

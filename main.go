@@ -49,7 +49,7 @@ type metricsServer struct {
 func (m *metricsServer) Start() error {
 	ln, err := net.Listen("tcp", m.addr)
 	if err != nil {
-		return fmt.Errorf("error listening on: %s: %v", m.addr, err)
+		return fmt.Errorf("metrics server error listening on: %s: %v", m.addr, err)
 	}
 	mux := http.NewServeMux()
 	handler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{
